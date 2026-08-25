@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Profundidad de Ablación · Dr. Stipanicic</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
+
+  :root{
+    --bg: #0A1512;
+    --bg-2: #0E1D19;
+    --panel: #111F1B;
+    --panel-2: #16241F;
+    --line: rgba(233, 239, 233, 0.09);
+    --line-strong: rgba(233, 239, 233, 0.16);
+    --text: #E9EFE9;
+    --text-dim: #8FA69C;
+    --text-faint: #5C7168;
+    --accent: #5FE0C8;
+    --accent-dim: rgba(95, 224, 200, 0.15);
+    --warn: #E8A33D;
+    --warn-dim: rgba(232, 163, 61, 0.15);
+    --danger: #E8695D;
+    --danger-dim: rgba(232, 105, 93, 0.16);
+    --mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Consolas, monospace;
+    --sans: 'IBM Plex Sans', -apple-system, 'Segoe UI', sans-serif;
+  }
+
+  *{ box-sizing: border-box; }
+  html, body{ margin:0; padding:0; }
+  body{
+    background:
+      radial-gradient(1200px 600px at 15% -10%, rgba(95,224,200,0.06), transparent 60%),
+      radial-gradient(900px 500px at 100% 110%, rgba(95,224,200,0.04), transparent 55%),
+      var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    padding: 32px 20px 60px;
+  }
+
+  .wrap{ max-width: 980px; margin: 0 auto; }
+
+  /* Header */
+  header{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    flex-wrap: wrap;
+    gap: 18px;
+    margin-bottom: 28px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--line);
+  }
+  .eyebrow{
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 6px;
+  }
+  h1{
+    font-size: 26px;
+    font-weight: 600;
+    margin: 0;
+    letter-spacing: -0.01em;
+  }
+  h1 span{ color: var(--text-dim); font-weight: 400; }
+
+  .byline{
+    font-family: var(--mono);
+    font-size: 12.5px;
+    letter-spacing: 0.03em;
+    color: var(--accent);
+    margin: 8px 0 0;
+  }
+
+  .toggles{
+    display:flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .toggle{
+    display:flex;
+    border: 1px solid var(--line-strong);
+    border-radius: 8px;
+    overflow:hidden;
+    font-family: var(--mono);
+    font-size: 13px;
+  }
+  .toggle button{
+    background: transparent;
+    border: none;
+    color: var(--text-dim);
+    padding: 10px 20px;
+    cursor: pointer;
+    letter-spacing: 0.04em;
+    transition: background .2s, color .2s;
+  }
+  .toggle button.active{
+    background: var(--accent-dim);
+    color: var(--accent);
+  }
+  .toggle button:not(.active):hover{ color: var(--text); }
+
+  /* Grid */
+  .grid{
+    display:grid;
+    grid-template-columns: 1fr 1.15fr;
+    gap: 20px;
+  }
+  @media (max-width: 760px){
+    .grid{ grid-template-columns: 1fr; }
+  }
+
+  .panel{
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 22px;
+  }
+
+  .panel-title{
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    margin: 0 0 18px;
+  }
+
+  .field{ margin-bottom: 18px; }
+  .field:last-child{ margin-bottom: 0; }
+  .field label{
+    display:flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: 13px;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+  }
+  .field label .val{
+    font-family: var(--mono);
+    color: var(--text);
+    font-size: 13px;
+  }
+  input[type="number"], input[type="text"]{
+    width: 100%;
+    background: var(--bg-2);
+    border: 1px solid var(--line-strong);
+    border-radius: 7px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 15px;
+    padding: 10px 12px;
+    outline: none;
+    transition: border-color .15s;
+  }
+  input[type="number"]:focus, input[type="text"]:focus{ border-color: var(--accent); }
+  input[type="range"]{
+    width: 100%;
+    accent-color: var(--accent);
+    margin-top: 6px;
+  }
+  .hint{
+    font-size: 11.5px;
+    color: var(--text-faint);
+    margin-top: 6px;
+    line-height: 1.4;
+  }
+
+  .checkbox-label{
+    display:flex;
+    align-items:center;
+    gap: 9px;
+    font-size: 13px;
+    color: var(--text);
+    cursor: pointer;
+    margin-bottom: 0;
+  }
+  .checkbox-label input[type="checkbox"]{
+    width: 16px; height: 16px;
+    accent-color: var(--accent);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .wf-sub{
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px dashed var(--line-strong);
+  }
+
+  .breakdown{
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    margin: 6px 0 0;
+    line-height: 1.5;
+  }
+
+  /* Readout */
+  .readout-row{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+  .readout-row-3{ grid-template-columns: repeat(3, 1fr); }
+  @media (max-width: 640px){
+    .readout-row-3{ grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 420px){ .readout-row{ grid-template-columns: 1fr; } }
+
+  .readout{
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 16px 18px;
+  }
+  .readout .label{
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    margin-bottom: 8px;
+  }
+  .readout .num{
+    font-family: var(--mono);
+    font-size: 34px;
+    font-weight: 600;
+    line-height: 1;
+    color: var(--accent);
+    transition: color .2s;
+  }
+  .readout .num .unit{
+    font-size: 15px;
+    color: var(--text-dim);
+    font-weight: 400;
+    margin-left: 4px;
+  }
+  .readout.status-ok .num{ color: var(--accent); }
+  .readout.status-warn .num{ color: var(--warn); }
+  .readout.status-danger .num{ color: var(--danger); }
+  .status-tag{
+    display:inline-block;
+    margin-top: 8px;
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 4px;
+  }
+  .status-ok .status-tag{ background: var(--accent-dim); color: var(--accent); }
+  .status-warn .status-tag{ background: var(--warn-dim); color: var(--warn); }
+  .status-danger .status-tag{ background: var(--danger-dim); color: var(--danger); }
+
+  .readout-full{ margin-bottom: 20px; }
+
+  .k-grid{
+    display:flex;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+  }
+  .k-item{
+    display:flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .k-axis{
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+  }
+  .k-values{
+    font-family: var(--mono);
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--accent);
+  }
+
+  /* Cross section */
+  .section-title{
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    margin: 4px 0 10px;
+  }
+  .cornea-bar{
+    display:flex;
+    width: 100%;
+    height: 46px;
+    border-radius: 6px;
+    overflow: hidden;
+    border: 1px solid var(--line-strong);
+  }
+  .seg{
+    height: 100%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--bg);
+    white-space: nowrap;
+    overflow: hidden;
+    transition: flex-basis .35s ease;
+    min-width: 0;
+  }
+  .seg-flap{ background: #9FB8AF; }
+  .seg-epi{ background: #C9E6DD; }
+  .seg-ablation{ background: var(--accent); color: #06211C; font-weight: 600; }
+  .seg-bed{ background: var(--panel-2); color: var(--text-dim); border-right: none; }
+  .legend{
+    display:flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-top: 12px;
+    font-size: 11.5px;
+    color: var(--text-dim);
+  }
+  .legend .dot{
+    display:inline-block;
+    width: 9px; height: 9px;
+    border-radius: 2px;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+
+  .warn-box{
+    margin-top: 16px;
+    border: 1px solid var(--danger);
+    background: var(--danger-dim);
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 12.5px;
+    color: #F3C2BC;
+    line-height: 1.5;
+    display: none;
+  }
+  .warn-box.show{ display:block; }
+  .warn-box.level-warn{ border-color: var(--warn); background: var(--warn-dim); color: #F2D5A8; }
+
+  footer{
+    margin-top: 24px;
+    padding-top: 18px;
+    border-top: 1px solid var(--line);
+    font-size: 12px;
+    color: var(--text-faint);
+    line-height: 1.6;
+  }
+  footer code{
+    font-family: var(--mono);
+    color: var(--text-dim);
+    background: var(--bg-2);
+    padding: 1px 5px;
+    border-radius: 4px;
+  }
+  footer .disclaimer{
+    margin-top: 10px;
+    color: var(--warn);
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div>
+      <p class="eyebrow">Cirugía refractiva corneal</p>
+      <h1>Profundidad de ablación <span>· LASIK / PRK</span></h1>
+      <p class="byline">Dr. Stipanicic</p>
+    </div>
+    <div class="toggles">
+      <div class="toggle" id="modeToggle">
+        <button data-mode="lasik" class="active">LASIK</button>
+        <button data-mode="prk">PRK</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="grid">
+
+    <!-- INPUTS -->
+    <div class="panel">
+      <p class="panel-title">Parámetros</p>
+
+      <div class="field">
+        <label>Esfera <span class="val" id="vSph">-4.00 D</span></label>
+        <input type="text" inputmode="decimal" id="sph" value="-4.00" data-step="0.25" data-min="-15" data-max="15">
+        <input type="range" id="sphRange" value="-4.00" step="0.25" min="-15" max="15">
+        <p class="hint">Negativa = miópica · Positiva = hipermetrópica</p>
+      </div>
+
+      <div class="field">
+        <label>Cilindro <span class="val" id="vCyl">-1.00 D</span></label>
+        <input type="text" inputmode="decimal" id="cyl" value="-1.00" data-step="0.25" data-min="-8" data-max="8">
+        <input type="range" id="cylRange" value="-1.00" step="0.25" min="-8" max="8">
+        <p class="hint">Notación negativa o positiva, la que uses habitualmente</p>
+      </div>
+
+      <div class="field">
+        <label>Eje <span class="val" id="vAxis">180°</span></label>
+        <input type="number" id="axis" value="180" step="1" min="0" max="180">
+        <input type="range" id="axisRange" value="180" step="1" min="0" max="180">
+        <p class="hint">No afecta la profundidad calculada, solo identifica la orientación de los meridianos</p>
+      </div>
+
+      <div class="field">
+        <label>K1 <span class="val" id="vK1">44.00 D</span></label>
+        <input type="text" inputmode="decimal" id="k1" value="44.00" data-step="0.25" data-min="35" data-max="55">
+        <input type="range" id="k1Range" value="44.00" step="0.25" min="35" max="55">
+      </div>
+
+      <div class="field">
+        <label>K2 <span class="val" id="vK2">45.00 D</span></label>
+        <input type="text" inputmode="decimal" id="k2" value="45.00" data-step="0.25" data-min="35" data-max="55">
+        <input type="range" id="k2Range" value="45.00" step="0.25" min="35" max="55">
+        <p class="hint">Queratometría corneal preoperatoria en los mismos meridianos que la refracción (eje y eje+90°)</p>
+      </div>
+
+      <div class="field">
+        <label class="checkbox-label">
+          <input type="checkbox" id="wfToggle">
+          Wavefront-Optimized (WaveLight EX500)
+        </label>
+        <div class="wf-sub" id="wfSub" style="display:none">
+          <label>Incremento por asfericidad <span class="val" id="vWf">8%</span></label>
+          <input type="number" id="wf" value="8" step="1" min="0" max="15">
+          <input type="range" id="wfRange" value="8" step="1" min="0" max="15">
+          <p class="hint">Los perfiles wavefront-optimized añaden ablación periférica para preservar la asfericidad corneal. El algoritmo exacto de WaveLight es propietario — este porcentaje es una estimación ajustable, no el valor real del láser.</p>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Zona óptica (A) <span class="val" id="vZone">6.5 mm</span></label>
+        <input type="text" inputmode="decimal" id="zone" value="6.5" data-step="0.1" data-min="4" data-max="8">
+        <input type="range" id="zoneRange" value="6.5" step="0.1" min="4" max="8">
+      </div>
+
+      <div class="field" id="bZoneField" style="display:none">
+        <label>Zona de tratamiento total (B) <span class="val" id="vBZone">8.5 mm</span></label>
+        <input type="text" inputmode="decimal" id="bZone" value="8.5" data-step="0.1" data-min="6" data-max="10">
+        <input type="range" id="bZoneRange" value="8.5" step="0.1" min="6" max="10">
+        <p class="hint">Se usa para el/los meridiano(s) con componente hipermetrópica. Incluye zona óptica central + zona de transición.</p>
+      </div>
+
+      <div class="field">
+        <label>Paquimetría corneal <span class="val" id="vPaqui">550 µm</span></label>
+        <input type="number" id="paqui" value="550" step="1" min="420" max="700">
+        <input type="range" id="paquiRange" value="550" step="1" min="420" max="700">
+      </div>
+
+      <div class="field" id="flapField">
+        <label>Espesor de flap <span class="val" id="vFlap">110 µm</span></label>
+        <input type="number" id="flap" value="110" step="1" min="80" max="180">
+        <input type="range" id="flapRange" value="110" step="1" min="80" max="180">
+        <p class="hint">Microqueratomo ~130–160 µm · Femtosegundo ~90–120 µm</p>
+      </div>
+
+      <div class="field" id="epiField" style="display:none">
+        <label>Espesor epitelial <span class="val" id="vEpi">55 µm</span></label>
+        <input type="number" id="epi" value="55" step="1" min="40" max="70">
+        <input type="range" id="epiRange" value="55" step="1" min="40" max="70">
+        <p class="hint">Desepitelización previa a la ablación de superficie</p>
+      </div>
+
+      <div class="field">
+        <label>Lecho estromal residual mínimo aceptado <span class="val" id="vMin">250 µm</span></label>
+        <input type="number" id="minBed" value="250" step="5" min="200" max="300">
+        <input type="range" id="minBedRange" value="250" step="5" min="200" max="300">
+      </div>
+
+      <div class="field">
+        <label>PTA máximo aceptable <span class="val" id="vPtaMax">40%</span></label>
+        <input type="number" id="ptaMax" value="40" step="1" min="30" max="45">
+        <input type="range" id="ptaMaxRange" value="40" step="1" min="30" max="45">
+        <p class="hint">Percent Tissue Altered: proporción del espesor corneal total involucrada en el corte + la ablación</p>
+      </div>
+    </div>
+
+    <!-- READOUT -->
+    <div class="panel">
+      <p class="panel-title">Resultado</p>
+
+      <div class="readout-row readout-row-3">
+        <div class="readout status-ok" id="readAbl">
+          <p class="label">Profundidad de ablación</p>
+          <span class="status-tag" id="classTag" style="margin-bottom:8px">—</span>
+          <p class="num" id="ablVal">0<span class="unit">µm</span></p>
+          <p class="breakdown" id="ablBreakdown"></p>
+        </div>
+        <div class="readout status-ok" id="readTissue">
+          <p class="label">Tejido alterado (absoluto)</p>
+          <p class="num" id="tissueVal">0<span class="unit">µm</span></p>
+          <p class="breakdown" id="tissueBreakdown"></p>
+        </div>
+        <div class="readout status-ok" id="readBed">
+          <p class="label">Lecho estromal residual</p>
+          <p class="num" id="bedVal">0<span class="unit">µm</span></p>
+          <span class="status-tag" id="bedTag">OK</span>
+        </div>
+      </div>
+
+      <div class="readout status-ok readout-full" id="readPta">
+        <p class="label">PTA · Percent Tissue Altered</p>
+        <p class="num" id="ptaVal">0<span class="unit">%</span></p>
+        <p class="breakdown" id="ptaBreakdown"></p>
+        <span class="status-tag" id="ptaTag">OK</span>
+      </div>
+
+      <div class="readout status-ok readout-full" id="readK">
+        <p class="label">Queratometrías estimadas post-operatorias</p>
+        <div class="k-grid">
+          <div class="k-item">
+            <span class="k-axis">Eje <span id="kAxis1">180</span>°</span>
+            <span class="k-values"><span id="k1Pre">44.00</span> → <span id="k1Post">40.00</span> D</span>
+          </div>
+          <div class="k-item">
+            <span class="k-axis">Eje <span id="kAxis2">90</span>°</span>
+            <span class="k-values"><span id="k2Pre">45.00</span> → <span id="k2Post">41.00</span> D</span>
+          </div>
+        </div>
+        <p class="breakdown" id="kBreakdown"></p>
+      </div>
+
+      <p class="section-title">Corte transversal (proporcional)</p>
+      <div class="cornea-bar" id="corneaBar">
+        <div class="seg seg-flap" id="segFlap"></div>
+        <div class="seg seg-ablation" id="segAbl"></div>
+        <div class="seg seg-bed" id="segBed"></div>
+      </div>
+      <div class="legend">
+        <span><span class="dot" style="background:#9FB8AF" id="legFlapDot"></span><span id="legFlapText">Flap</span></span>
+        <span><span class="dot" style="background:var(--accent)"></span>Ablación</span>
+        <span><span class="dot" style="background:var(--panel-2)"></span>Lecho residual</span>
+      </div>
+
+      <div class="warn-box" id="warnBox"></div>
+    </div>
+
+  </div>
+
+  <footer>
+    La profundidad se calcula por meridiano principal, no como esfera+cilindro global: <code>meridiano 1 = Esfera</code> · <code>meridiano 2 = Esfera + Cilindro</code>. Cada meridiano negativo usa Munnerlyn miópico <code>|M| × A² / 3</code>; cada meridiano positivo usa la fórmula anular <code>|M| × (B² − A²) / 3</code>. La profundidad central que se reporta es la del meridiano más exigente — así se cubren miopía simple/compuesta, hipermetropía simple/compuesta y astigmatismo mixto (meridianos de signo opuesto). Si está activo Wavefront-Optimized, se suma el porcentaje indicado sobre ese subtotal (aproximación del perfil asférico de WaveLight EX500, no la fórmula propietaria real).
+    Lecho estromal residual: <code>LASIK → paquimetría − flap − ablación</code> · <code>PRK → paquimetría − epitelio − ablación</code>.
+    PTA (Percent Tissue Altered): <code>(flap o epitelio + ablación) / paquimetría × 100</code>. En LASIK el componente de corte es el flap; en PRK, al no haber cirugía lamelar, se usa el espesor epitelial removido antes de la ablación.
+    Queratometría post-operatoria estimada: <code>K post = K pre + M</code> por meridiano (M negativo aplana, M positivo curva). Es una aproximación de primer orden 1:1 entre corrección y cambio queratométrico — no contempla distancia al vértice ni eficacia real de ablación, y no reemplaza la topografía/tomografía postoperatoria real.
+    <div class="disclaimer">Herramienta educativa/estimativa. No reemplaza el software del excimer láser ni el criterio del cirujano — no usar para planificación quirúrgica real.</div>
+  </footer>
+
+</div>
+
+<script>
+(function(){
+  const state = { mode: 'lasik' };
+
+  const els = {
+    sph: document.getElementById('sph'), sphRange: document.getElementById('sphRange'), vSph: document.getElementById('vSph'),
+    cyl: document.getElementById('cyl'), cylRange: document.getElementById('cylRange'), vCyl: document.getElementById('vCyl'),
+    axis: document.getElementById('axis'), axisRange: document.getElementById('axisRange'), vAxis: document.getElementById('vAxis'),
+    k1: document.getElementById('k1'), k1Range: document.getElementById('k1Range'), vK1: document.getElementById('vK1'),
+    k2: document.getElementById('k2'), k2Range: document.getElementById('k2Range'), vK2: document.getElementById('vK2'),
+    kAxis1: document.getElementById('kAxis1'), kAxis2: document.getElementById('kAxis2'),
+    k1Pre: document.getElementById('k1Pre'), k1Post: document.getElementById('k1Post'),
+    k2Pre: document.getElementById('k2Pre'), k2Post: document.getElementById('k2Post'),
+    kBreakdown: document.getElementById('kBreakdown'),
+    wfToggle: document.getElementById('wfToggle'), wfSub: document.getElementById('wfSub'),
+    wf: document.getElementById('wf'), wfRange: document.getElementById('wfRange'), vWf: document.getElementById('vWf'),
+    zone: document.getElementById('zone'), zoneRange: document.getElementById('zoneRange'), vZone: document.getElementById('vZone'),
+    bZoneField: document.getElementById('bZoneField'),
+    bZone: document.getElementById('bZone'), bZoneRange: document.getElementById('bZoneRange'), vBZone: document.getElementById('vBZone'),
+    paqui: document.getElementById('paqui'), paquiRange: document.getElementById('paquiRange'), vPaqui: document.getElementById('vPaqui'),
+    flap: document.getElementById('flap'), flapRange: document.getElementById('flapRange'), vFlap: document.getElementById('vFlap'),
+    epi: document.getElementById('epi'), epiRange: document.getElementById('epiRange'), vEpi: document.getElementById('vEpi'),
+    minBed: document.getElementById('minBed'), minBedRange: document.getElementById('minBedRange'), vMin: document.getElementById('vMin'),
+    ptaMax: document.getElementById('ptaMax'), ptaMaxRange: document.getElementById('ptaMaxRange'), vPtaMax: document.getElementById('vPtaMax'),
+    flapField: document.getElementById('flapField'), epiField: document.getElementById('epiField'),
+    classTag: document.getElementById('classTag'),
+    ablVal: document.getElementById('ablVal'), ablBreakdown: document.getElementById('ablBreakdown'), bedVal: document.getElementById('bedVal'),
+    tissueVal: document.getElementById('tissueVal'), tissueBreakdown: document.getElementById('tissueBreakdown'),
+    readAbl: document.getElementById('readAbl'), readBed: document.getElementById('readBed'), bedTag: document.getElementById('bedTag'),
+    readPta: document.getElementById('readPta'), ptaVal: document.getElementById('ptaVal'), ptaBreakdown: document.getElementById('ptaBreakdown'), ptaTag: document.getElementById('ptaTag'),
+    segFlap: document.getElementById('segFlap'), segAbl: document.getElementById('segAbl'), segBed: document.getElementById('segBed'),
+    legFlapDot: document.getElementById('legFlapDot'), legFlapText: document.getElementById('legFlapText'),
+    warnBox: document.getElementById('warnBox'),
+    modeToggle: document.getElementById('modeToggle')
+  };
+
+  function parseNum(v){
+    const n = parseFloat(String(v).replace(',', '.'));
+    return isNaN(n) ? 0 : n;
+  }
+
+  function fmtSigned(val, decimals){
+    const n = Number(val);
+    return (n >= 0 ? '+' : '') + n.toFixed(decimals);
+  }
+
+  function linkPair(numEl, rangeEl, display, suffix, decimals, signed){
+    function updateDisplay(num){
+      display.textContent = (signed ? fmtSigned(num, decimals) : num.toFixed(decimals)) + suffix;
+    }
+    numEl.addEventListener('input', () => {
+      const num = parseNum(numEl.value);
+      rangeEl.value = num;
+      updateDisplay(num);
+      calc();
+    });
+    rangeEl.addEventListener('input', () => {
+      numEl.value = rangeEl.value;
+      updateDisplay(parseNum(rangeEl.value));
+      calc();
+    });
+    const initNum = parseNum(numEl.value);
+    rangeEl.value = initNum;
+    updateDisplay(initNum);
+  }
+
+  linkPair(els.sph, els.sphRange, els.vSph, ' D', 2, true);
+  linkPair(els.cyl, els.cylRange, els.vCyl, ' D', 2, true);
+  linkPair(els.axis, els.axisRange, els.vAxis, '°', 0);
+  linkPair(els.k1, els.k1Range, els.vK1, ' D', 2);
+  linkPair(els.k2, els.k2Range, els.vK2, ' D', 2);
+  linkPair(els.wf, els.wfRange, els.vWf, '%', 0);
+  linkPair(els.zone, els.zoneRange, els.vZone, ' mm', 1);
+  linkPair(els.bZone, els.bZoneRange, els.vBZone, ' mm', 1);
+  linkPair(els.paqui, els.paquiRange, els.vPaqui, ' µm', 0);
+  linkPair(els.flap, els.flapRange, els.vFlap, ' µm', 0);
+  linkPair(els.epi, els.epiRange, els.vEpi, ' µm', 0);
+  linkPair(els.minBed, els.minBedRange, els.vMin, ' µm', 0);
+  linkPair(els.ptaMax, els.ptaMaxRange, els.vPtaMax, '%', 0);
+
+  els.wfToggle.addEventListener('change', () => {
+    els.wfSub.style.display = els.wfToggle.checked ? '' : 'none';
+    calc();
+  });
+
+  els.modeToggle.addEventListener('click', (e) => {
+    const btn = e.target.closest('button');
+    if(!btn) return;
+    state.mode = btn.dataset.mode;
+    [...els.modeToggle.children].forEach(b => b.classList.toggle('active', b === btn));
+    els.flapField.style.display = state.mode === 'lasik' ? '' : 'none';
+    els.epiField.style.display = state.mode === 'prk' ? '' : 'none';
+    els.legFlapText.textContent = state.mode === 'lasik' ? 'Flap' : 'Epitelio';
+    els.legFlapDot.style.background = state.mode === 'lasik' ? '#9FB8AF' : '#C9E6DD';
+    els.segFlap.className = 'seg ' + (state.mode === 'lasik' ? 'seg-flap' : 'seg-epi');
+    calc();
+  });
+
+  function calc(){
+    const S = parseNum(els.sph.value);
+    const C = parseNum(els.cyl.value);
+    const A = parseNum(els.zone.value);
+    const BZ = parseNum(els.bZone.value) || A;
+    const paqui = parseNum(els.paqui.value);
+    const minBed = parseNum(els.minBed.value) || 250;
+    const ptaMax = parseNum(els.ptaMax.value) || 40;
+    const wfOn = els.wfToggle.checked;
+    const wfPct = parseNum(els.wf.value);
+
+    // Meridianos principales: M1 en el eje, M2 a 90° del eje
+    const M1 = S;
+    const M2 = S + C;
+    const axis = parseNum(els.axis.value);
+    const axis2 = ((axis + 90) % 180 + 180) % 180;
+
+    function depthFor(M){
+      if(M < 0) return { d: (-M) * A * A / 3, type: 'miópico' };
+      if(M > 0) return { d: M * Math.max(0, (BZ*BZ) - (A*A)) / 3, type: 'hipermetrópico' };
+      return { d: 0, type: 'plano' };
+    }
+    const r1 = depthFor(M1);
+    const r2 = depthFor(M2);
+
+    els.bZoneField.style.display = (M1 > 0 || M2 > 0) ? '' : 'none';
+
+    // Clasificación
+    let cls;
+    if(C === 0){
+      cls = S < 0 ? 'Miópico' : (S > 0 ? 'Hipermetrópico' : 'Sin ametropía');
+    } else if(M1 === 0 || M2 === 0){
+      cls = (M1 < 0 || M2 < 0) ? 'Astigmatismo miópico simple' : 'Astigmatismo hipermetrópico simple';
+    } else if(M1 < 0 && M2 < 0){
+      cls = 'Astigmatismo miópico compuesto';
+    } else if(M1 > 0 && M2 > 0){
+      cls = 'Astigmatismo hipermetrópico compuesto';
+    } else {
+      cls = 'Astigmatismo mixto';
+    }
+    els.classTag.textContent = cls;
+
+    // Queratometrías post-operatorias estimadas (K post = K pre + M por meridiano)
+    const k1Pre = parseNum(els.k1.value);
+    const k2Pre = parseNum(els.k2.value);
+    const k1Post = k1Pre + M1;
+    const k2Post = k2Pre + M2;
+    els.kAxis1.textContent = axis.toFixed(0);
+    els.kAxis2.textContent = axis2.toFixed(0);
+    els.k1Pre.textContent = k1Pre.toFixed(2);
+    els.k1Post.textContent = k1Post.toFixed(2);
+    els.k2Pre.textContent = k2Pre.toFixed(2);
+    els.k2Post.textContent = k2Post.toFixed(2);
+    const astigPre = Math.abs(k2Pre - k1Pre);
+    const astigPost = Math.abs(k2Post - k1Post);
+    els.kBreakdown.textContent = `Astigmatismo corneal: ${astigPre.toFixed(2)} D → ${astigPost.toFixed(2)} D`;
+
+
+    const ablBase = Math.max(r1.d, r2.d);
+    const wfAdd = wfOn ? ablBase * (wfPct / 100) : 0;
+    const ablation = ablBase + wfAdd;
+
+    let breakdown = `Eje ${axis.toFixed(0)}°: M1 ${fmtSigned(M1,2)} D (${r1.type}) → ${r1.d.toFixed(1)} µm · Eje ${axis2.toFixed(0)}°: M2 ${fmtSigned(M2,2)} D (${r2.type}) → ${r2.d.toFixed(1)} µm`;
+    if(wfOn) breakdown += ` · WF +${wfAdd.toFixed(1)} µm`;
+    els.ablBreakdown.textContent = breakdown;
+
+    let removedLayer, removedLabel;
+    if(state.mode === 'lasik'){
+      removedLayer = parseNum(els.flap.value);
+      removedLabel = 'flap';
+    } else {
+      removedLayer = parseNum(els.epi.value);
+      removedLabel = 'epitelio';
+    }
+
+    const bed = paqui - removedLayer - ablation;
+
+    els.ablVal.innerHTML = ablation.toFixed(1) + '<span class="unit">µm</span>';
+    els.bedVal.innerHTML = bed.toFixed(1) + '<span class="unit">µm</span>';
+
+    // status
+    let statusClass = 'status-ok', tag = 'OK', warnMsg = '', warnLevel = '';
+    if(bed < 200){
+      statusClass = 'status-danger'; tag = 'RIESGO ALTO';
+      warnMsg = `Lecho residual estimado de ${bed.toFixed(0)} µm: por debajo de 200 µm, riesgo alto de ectasia corneal. Revisar indicación.`;
+      warnLevel = '';
+    } else if(bed < minBed){
+      statusClass = 'status-warn'; tag = 'POR DEBAJO DEL MÍNIMO';
+      warnMsg = `Lecho residual estimado de ${bed.toFixed(0)} µm: por debajo del mínimo aceptado (${minBed} µm). Considerar reducir corrección, ampliar paquimetría o descartar el procedimiento.`;
+      warnLevel = 'level-warn';
+    }
+
+    els.readBed.className = 'readout ' + statusClass;
+    els.bedTag.textContent = tag;
+
+    if(warnMsg){
+      els.warnBox.textContent = warnMsg;
+      els.warnBox.className = 'warn-box show ' + warnLevel;
+    } else {
+      els.warnBox.className = 'warn-box';
+    }
+
+    // PTA — Percent Tissue Altered
+    const ptaCut = removedLayer;
+    const tissueAltered = ptaCut + ablation;
+    const pta = paqui > 0 ? (tissueAltered / paqui) * 100 : 0;
+
+    els.tissueVal.innerHTML = tissueAltered.toFixed(1) + '<span class="unit">µm</span>';
+    els.tissueBreakdown.textContent = state.mode === 'lasik'
+      ? `${ptaCut.toFixed(0)} µm flap + ${ablation.toFixed(1)} µm ablación`
+      : `${ptaCut.toFixed(0)} µm epitelio + ${ablation.toFixed(1)} µm ablación`;
+
+    els.ptaVal.innerHTML = pta.toFixed(1) + '<span class="unit">%</span>';
+    els.ptaBreakdown.textContent = `${tissueAltered.toFixed(1)} µm tejido alterado / ${paqui.toFixed(0)} µm paquimetría`;
+
+    let ptaClass = 'status-ok', ptaTag = 'OK';
+    if(pta >= ptaMax){
+      ptaClass = 'status-danger'; ptaTag = 'RIESGO ALTO';
+    } else if(pta >= ptaMax - 5){
+      ptaClass = 'status-warn'; ptaTag = 'PRECAUCIÓN';
+    }
+    els.readPta.className = 'readout readout-full ' + ptaClass;
+    els.ptaTag.textContent = ptaTag;
+
+    // cross-section bar (proportional to paquimetry)
+    const total = Math.max(paqui, 1);
+    const flapPct = Math.max(0, (removedLayer / total) * 100);
+    const ablPct = Math.max(0, (ablation / total) * 100);
+    const bedPct = Math.max(0, 100 - flapPct - ablPct);
+
+    els.segFlap.style.flexBasis = flapPct + '%';
+    els.segAbl.style.flexBasis = ablPct + '%';
+    els.segBed.style.flexBasis = bedPct + '%';
+
+    els.segFlap.textContent = flapPct > 8 ? removedLabel : '';
+    els.segAbl.textContent = ablPct > 8 ? 'ablación' : '';
+    els.segBed.textContent = bedPct > 8 ? 'lecho' : '';
+  }
+
+  calc();
+})();
+</script>
+</body>
+</html>
