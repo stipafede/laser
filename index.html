@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 
-<html lang="es"><head><meta charset="utf-8"/><meta content="width=device-width,initial-scale=1" name="viewport"/><meta content="dark" name="color-scheme"/><title>Profundidad de ablación · Beta 0.5</title><style>
+<html lang="es"><head><meta charset="utf-8"/><meta content="width=device-width,initial-scale=1" name="viewport"/><meta content="dark" name="color-scheme"/><title>Profundidad de ablación · Beta 0.6</title><style>
 
   :root{
     --bg: #0A1512;
@@ -573,7 +573,7 @@ footer{margin-top:15px;padding-top:12px}
  .readout .num{font-size:23px}
 }
 
-/* Beta 0.5: compact advanced sliders and independent K simulation */
+/* Beta 0.6: compact advanced sliders and independent K simulation */
 .advanced-slider-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:3px}
 .field .advanced-slider-head label{display:block!important;color:var(--text);margin:0;font-size:12px;flex:1;line-height:1.4}
 .slider-number{display:flex;align-items:center;gap:5px;flex:0 0 auto;color:var(--text-dim);font:11px var(--mono)}
@@ -614,11 +614,29 @@ footer{margin-top:15px;padding-top:12px}
 .k-citation{font-size:10.5px;line-height:1.6;color:var(--text-dim);padding-top:8px;border-top:1px solid var(--line)}
 .k-citation a{color:var(--accent)}
 @media(max-width:420px){.k-params{gap:6px}.unit-field{gap:2px}.unit-field input[type=text]{padding:6px 1px}.k-reading-main strong{font-size:24px}}
+
+/* Beta 0.6: correct cylinder-axis field alignment and theoretical bitoric profile */
+.k-params{align-items:start}
+.k-params .field{display:flex;flex-direction:column;min-width:0;align-self:start;margin-top:0!important}
+.k-params .field>label{height:36px;display:flex!important;align-items:flex-end!important;justify-content:flex-start!important;margin:0 0 7px!important;line-height:1.35}
+.k-params .unit-field{height:43px;align-items:center}
+.k-params .unit-field input{height:43px}
+#geoCanvas{display:block;width:100%;height:auto;max-height:220px;background:#0E1D19;border:1px solid rgba(95,224,200,.15);border-radius:8px;margin-top:12px}
+.geo-caption{font:11px/1.55 var(--sans);color:var(--text-dim);margin:10px 0 2px}
+#disabledPane{padding:9px 11px;margin:8px 0 12px;border-radius:7px}
+#disabledPane h3{display:inline;font-size:11px;margin:0 7px 0 0;font-weight:600}
+#disabledPane p{display:inline;font-size:11px;line-height:1.45}
+#readAbl.status-warn.primary{border-color:rgba(232,163,61,.45)}
+#disabledPane p{line-height:1.55}
+#readAbl.status-warn .num{color:var(--warn)}
+#readPta.inactive-pta .num{color:var(--text-faint)}
+#readPta.inactive-pta .status-tag{color:var(--text-dim);background:var(--panel-2)}
+@media(max-width:420px){.k-params .field>label{font-size:10.5px}.k-params .unit-field input{font-size:15px}}
 </style></head><body>
 <div class="wrap">
 <header>
 <div>
-<p class="eyebrow">Cirugía refractiva corneal <span class="beta">BETA 0.5</span></p>
+<p class="eyebrow">Cirugía refractiva corneal <span class="beta">BETA 0.6</span></p>
 <h1>Profundidad de ablación </h1>
 <p class="byline">Dr. Federico Stipanicic</p>
 </div>
@@ -629,14 +647,15 @@ footer{margin-top:15px;padding-top:12px}
 </header>
 <div class="grid">
 <section aria-label="Resultados calculados" aria-live="off" class="panel" id="resultsPanel">
-<p class="panel-title">RESULTADOS ESTIMADOS <span class="model-mini">Munnerlyn · estimación teórica</span></p>
-<div class="hidden" id="disabledPane" role="status"><h3>Perfil sin estimación cuantitativa disponible</h3><p id="disabledMsg"></p></div>
+<p class="panel-title">RESULTADOS ESTIMADOS <span class="model-mini" id="modelMini">Munnerlyn · estimación teórica</span></p>
+
 <div class="readout-row readout-row-compact">
-<div class="readout status-ok primary" id="readAbl"><p class="label">Profundidad de ablación</p><p class="num" id="ablVal">—</p><p class="detail-text breakdown" id="ablBreakdown"></p></div>
+<div class="readout status-ok primary" id="readAbl"><p class="label" id="ablLabel">Profundidad de ablación</p><p class="num" id="ablVal">—</p><p class="detail-text breakdown" id="ablBreakdown"></p></div>
 <div class="readout status-ok" id="readBed"><p class="label">Estroma residual estimado</p><p class="num" id="bedVal">—</p><span class="status-tag" id="bedTag">—</span><p class="detail-text status-note" id="bedNote"></p></div>
 </div>
-<div class="readout readout-full status-ok pta-strip" id="readPta"><p class="label" id="ptaLabel">PTA estimado · LASIK</p><p class="num" id="ptaVal">—</p><p class="detail-text breakdown" id="ptaBreakdown"></p><span class="status-tag" id="ptaTag">—</span><p class="detail-text status-note" id="ptaNote"></p></div><details class="result-details"><summary>Ver desglose y esquema corneal</summary><div class="class-detail"><span>Clasificación de la refracción: </span><span class="status-tag neutral" id="classTag">Miópico</span></div><div class="readout" id="readTissue"><p class="label" id="tissueLabel">Flap + ablación (referencia para PTA)</p><p class="num" id="tissueVal">—</p><p class="breakdown" id="tissueBreakdown"></p></div><div id="barRegion"><p class="section-title">Esquema proporcional de espesores · no representa el perfil espacial del láser</p><div aria-label="Proporción del espesor corneal" class="cornea-bar"><div class="seg seg-flap" id="segFlap"></div><div class="seg seg-ablation" id="segAbl"></div><div class="seg seg-bed" id="segBed"></div></div><div class="legend"><span><span class="dot" id="legFlapDot" style="background:#9FB8AF"></span><span id="legFlapText">Flap</span></span><span><span class="dot" style="background:var(--accent)"></span>Ablación</span><span><span class="dot" style="background:var(--panel-2)"></span>Estroma residual</span></div></div></details>
+<div class="readout readout-full status-ok pta-strip" id="readPta"><p class="label" id="ptaLabel">PTA estimado · LASIK</p><p class="num" id="ptaVal">—</p><p class="detail-text breakdown" id="ptaBreakdown"></p><span class="status-tag" id="ptaTag">—</span><p class="detail-text status-note" id="ptaNote"></p></div><div class="hidden" id="disabledPane" role="status"><h3 id="experimentalTitle">Modelo experimental</h3><p id="disabledMsg"></p></div><details class="result-details"><summary>Ver desglose y esquema corneal</summary><div class="class-detail"><span>Clasificación de la refracción: </span><span class="status-tag neutral" id="classTag">Miópico</span></div><div class="readout" id="readTissue"><p class="label" id="tissueLabel">Flap + ablación (referencia para PTA)</p><p class="num" id="tissueVal">—</p><p class="breakdown" id="tissueBreakdown"></p></div><div id="barRegion"><p class="section-title">Esquema proporcional de espesores · no representa el perfil espacial del láser</p><div aria-label="Proporción del espesor corneal" class="cornea-bar"><div class="seg seg-flap" id="segFlap"></div><div class="seg seg-ablation" id="segAbl"></div><div class="seg seg-bed" id="segBed"></div></div><div class="legend"><span><span class="dot" id="legFlapDot" style="background:#9FB8AF"></span><span id="legFlapText">Flap</span></span><span><span class="dot" style="background:var(--accent)"></span>Ablación</span><span><span class="dot" style="background:var(--panel-2)"></span>Estroma residual</span></div></div></details>
 
+<details class="result-details hidden" id="geoSection"><summary>Visualizar perfil teórico en zona óptica</summary><canvas id="geoCanvas" width="720" height="330" role="img" aria-label="Curvas teóricas de remoción para los dos meridianos principales dentro de la zona óptica"></canvas><p class="geo-caption" id="geoCaption"></p></details>
 <div class="note hidden" id="expNote"><strong>Escenario experimental.</strong> El incremento uniforme elegido no describe la profundidad real del tratamiento WFO. Los indicadores de umbral quedan desactivados mientras se simula este perfil.</div>
 <div class="warn-box" id="warnBox"></div>
 </section><section aria-label="Parámetros de cálculo" class="panel" id="inputsPanel">
@@ -683,9 +702,9 @@ footer{margin-top:15px;padding-top:12px}
 </section>
 </div>
 <footer><details class="model-details"><summary>Limitaciones del modelo y referencias</summary><div class="note note-ok"><strong>Interpretación:</strong> estas estimaciones no sustituyen la topografía/tomografía, el mapa epitelial, la biomecánica, la evaluación clínica ni los parámetros que informa la plataforma láser.</div><p class="note note-ok"><strong>Semáforo:</strong> «OK» indica únicamente que el resultado estimado cumple el umbral numérico configurado, no que el ojo sea apto para cirugía. «PRECAUCIÓN» y «BAJO UMBRAL» tampoco sustituyen la evaluación individual del riesgo de ectasia.</p>
-<strong>Modelo:</strong> Munnerlyn miópico <code>d ≈ |M| × OZ² / 3</code>, aplicado como envolvente meridional en ojos con ambos meridianos no hipermetrópicos. En astigmatismo, esta envolvente no reproduce el perfil espacial de un algoritmo personalizado. LASIK: <code>RSB ≈ CCT − flap − d</code>; <code>PTA ≈ (flap + d) / CCT × 100</code>. PRK convencional: <code>estroma residual ≈ CCT − epitelio − d</code>; el espesor epitelial removido no debe equipararse biomecánicamente al flap. Para hipermetropía o astigmatismo mixto, el modelo actual no informa profundidad ni indicadores derivados.
-    <p class="disclaimer">Versión beta 0.5 · Desarrollo independiente. Aproximaciones matemáticas, sin validación clínica frente a perfiles de tratamiento reales. No utilizar estos cálculos como único fundamento para planificación o elegibilidad quirúrgica.</p>
-<p class="footer-links">Referencias: <a href="https://www.escrs.org/escrs-recommendations-for-refractive-surgery" rel="noopener noreferrer" target="_blank">ESCRS Refractive Surgery Recommendations</a> · <a href="https://www.aao.org/Assets/d2a71fff-34e7-4b77-9553-f6ac33860074/638592360994900000/refractive-surgery-ppp-updated-2024-pdf" rel="noopener noreferrer" target="_blank">AAO Refractive Surgery PPP</a>. <span>No se guardan datos ni se envían cálculos a un servidor.</span> · <a href="https://doi.org/10.2147/OPTH.S423087" rel="noopener noreferrer" target="_blank">Moshirfar et al. 2023 (ΔKm/ΔSEQ)</a></p><p class="feedback-note"><a href="https://github.com/stipafede/laser/issues/new" rel="noopener noreferrer" target="_blank">Enviar comentario o reportar discrepancia</a> · Abre GitHub Issues; requiere iniciar sesión en GitHub. No incluyas datos identificatorios de pacientes.</p>
+<strong>Modelo:</strong> Munnerlyn miópico <code>d ≈ |M| × OZ² / 3</code>, aplicado como envolvente meridional en ojos con ambos meridianos no hipermetrópicos. En astigmatismo, esta envolvente no reproduce el perfil espacial de un algoritmo personalizado. LASIK: <code>RSB ≈ CCT − flap − d</code>; <code>PTA ≈ (flap + d) / CCT × 100</code>. PRK convencional: <code>estroma residual ≈ CCT − epitelio − d</code>; el espesor epitelial removido no debe equipararse biomecánicamente al flap. Para hipermetropía y astigmatismo mixto se muestra exclusivamente un perfil bitoric cuadrático idealizado dentro de la zona óptica (sin zona de transición ni perfil WFO). Con meridianos M1 y M2 (D), y u=2x/OZ, v=2y/OZ: <code>d(x,y) ≈ (OZ²/3) × [M1×u² + M2×v² − min(0,M1,M2)]</code>, para u²+v² ≤ 1. Es una construcción geométrica de superficie no negativa, NO un algoritmo EX500 ni una profundidad máxima real. No se extrapolan lecho residual central, PTA clásico ni umbrales de ectasia desde una ablación paracentral. Los perfiles reales dependen de estrategia bitoric, transición, centrado, nomograma y plataforma láser.
+    <p class="disclaimer">Versión beta 0.6 · Desarrollo independiente. Aproximaciones matemáticas, sin validación clínica frente a perfiles de tratamiento reales. No utilizar estos cálculos como único fundamento para planificación o elegibilidad quirúrgica.</p>
+<p class="footer-links">Referencias: <a href="https://www.escrs.org/escrs-recommendations-for-refractive-surgery" rel="noopener noreferrer" target="_blank">ESCRS Refractive Surgery Recommendations</a> · <a href="https://www.aao.org/Assets/d2a71fff-34e7-4b77-9553-f6ac33860074/638592360994900000/refractive-surgery-ppp-updated-2024-pdf" rel="noopener noreferrer" target="_blank">AAO Refractive Surgery PPP</a>. <span>No se guardan datos ni se envían cálculos a un servidor.</span> · <a href="https://doi.org/10.2147/OPTH.S423087" rel="noopener noreferrer" target="_blank">Moshirfar et al. 2023 (ΔKm/ΔSEQ)</a> · <a href="https://pubmed.ncbi.nlm.nih.gov/11008038/" rel="noopener noreferrer" target="_blank">Modelos mixtos, 2000</a> · <a href="https://pubmed.ncbi.nlm.nih.gov/12457680/" rel="noopener noreferrer" target="_blank">Gatinel et al., 2002</a> · <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC8927553/" rel="noopener noreferrer" target="_blank">Moshirfar et al., EX500 mixto, 2022</a></p><p class="feedback-note"><a href="https://github.com/stipafede/laser/issues/new" rel="noopener noreferrer" target="_blank">Enviar comentario o reportar discrepancia</a> · Abre GitHub Issues; requiere iniciar sesión en GitHub. No incluyas datos identificatorios de pacientes.</p>
 </details></footer>
 </div>
 <script>
@@ -745,6 +764,7 @@ function resetOutputs(){
  for(const id of ['bedTag','ptaTag'])$(id).textContent='—';
  for(const id of ['readAbl','readBed','readTissue','readPta'])$(id).className='readout status-unavailable'+(id==='readPta'?' readout-full pta-strip':'')+(id==='readAbl'?' primary':'');
  $('barRegion').classList.add('hidden');$('warnBox').className='warn-box';
+ $('geoSection').classList.add('hidden');
 }
 function valWithUnit(id,v,suffix='µm'){ $(id).innerHTML=`${nfmt(v,1)}<span class="unit">${suffix}</span>`; }
 function status(block,tag,noteId,label,kind){
@@ -756,6 +776,55 @@ function classify(a,b,S,C){
  if(S===0&&C===0)return 'Sin ametropía';if(C===0)return S<0?'Miopía':'Hipermetropía';
  if(a*b<0)return 'Astigmatismo mixto';if(a===0||b===0)return a<0||b<0?'Astigmatismo miópico simple':'Astigmatismo hipermetrópico simple';
  return a<0&&b<0?'Astigmatismo miópico compuesto':'Astigmatismo hipermetrópico compuesto';
+}
+/**
+ * Beta 0.6: illustrative bitoric quadratic differential-sag field, optical zone only.
+ * u=2x/OZ, v=2y/OZ, u²+v²<=1, m1 and m2 in diopters.
+ * Uses Munnerlyn scale OZ²/3 (µm/D) to retain the mopic spherical limit.
+ * t(u,v) = OZ²/3 * (m1*u² + m2*v² - min(0,m1,m2)).
+ * The axial offset makes the map nonnegative. The unknown transition zone,
+ * bitoric algorithm, centration, WFO, and real tissue-removal maximum are omitted.
+ * Do not use for planning, RSB or PTA on hyperopic / mixed treatments.
+ */
+function theoreticalProfile(m1,m2,oz){
+ const scale=oz*oz/3;
+ const min=Math.min(0,m1,m2),max=Math.max(0,m1,m2);
+ const central=-min*scale,peak=(max-min)*scale;
+ return {scale,min,max,central,peak,radius:max>0?oz/2:0,
+  at:(u,v)=>Math.max(0,scale*(m1*u*u+m2*v*v-min))};
+}
+function drawGeometricProfile(m1,m2,oz,model){
+ const canvas=$('geoCanvas');if(!canvas||!$('geoSection').open)return;
+ const ctx=canvas.getContext('2d');if(!ctx)return;
+ const W=canvas.width,H=canvas.height;
+ ctx.clearRect(0,0,W,H);ctx.fillStyle='#0E1D19';ctx.fillRect(0,0,W,H);
+ const left=135,right=W-24,top=36,bottom=H-50,plotW=right-left,plotH=bottom-top;
+ ctx.lineWidth=1;ctx.strokeStyle='rgba(160,198,184,.23)';
+ for(let j=0;j<=4;j++){
+  const y=top+j*plotH/4;ctx.beginPath();ctx.moveTo(left,y);ctx.lineTo(right,y);ctx.stroke();
+ }
+ const maxScale=Math.max(model.peak,1);
+ ctx.font='20px ui-monospace, monospace';ctx.fillStyle='#A1B6AD';
+ ctx.textAlign='right';ctx.fillText(nfmt(model.peak,1)+' µm',left-8,top+8);
+ ctx.fillText('0',left-8,bottom+7);
+ ctx.textAlign='center';ctx.fillText('−'+nfmt(oz/2,2)+' mm',left,bottom+29);
+ ctx.fillText('0',left+plotW/2,bottom+29);
+ ctx.fillText('+'+nfmt(oz/2,2)+' mm',right,bottom+29);
+ const curves=[{m:m1,color:'#5FE0C8'},{m:m2,color:'#E8A33D'}];
+ for(const c of curves){
+  ctx.beginPath();ctx.lineWidth=4;ctx.strokeStyle=c.color;
+  for(let i=0;i<=180;i++){
+   const u=-1+2*i/180;
+   const d=model.scale*(c.m*u*u-model.min);
+   const xx=left+i*plotW/180,yy=bottom-Math.min(d/maxScale,1)*plotH;
+   if(i===0)ctx.moveTo(xx,yy);else ctx.lineTo(xx,yy);
+  }
+  ctx.stroke();
+ }
+ ctx.fillStyle='#5FE0C8';ctx.fillRect(left,13,16,4);
+ ctx.fillStyle='#BDD1C8';ctx.textAlign='left';ctx.fillText('M1',left+24,22);
+ ctx.fillStyle='#E8A33D';ctx.fillRect(left+100,13,16,4);
+ ctx.fillStyle='#BDD1C8';ctx.fillText('M2',left+124,22);
 }
 function calc(){
  $('flapField').classList.toggle('hidden',state.mode!=='lasik');
@@ -778,13 +847,31 @@ function calc(){
  resetOutputs();state.lastGood=true;
  const v=check.v,S=v.sph,C=v.cyl,M1=S,M2=S+C,axis=numberInput('axis').ok?numberInput('axis').value:180,axis2=(axis+90)%180;
  $('classTag').textContent=classify(M1,M2,S,C);
+ $('ablLabel').textContent='Profundidad de ablación';
+ $('modelMini').textContent='Munnerlyn · estimación teórica';
  if(M1>0||M2>0){
+  const model=theoreticalProfile(M1,M2,v.zone),mixed=M1*M2<0;
+  $('modelMini').textContent='Perfil cuadrático experimental · solo OZ';
+  $('ablLabel').textContent='Pico teórico dentro de OZ';
   $('disabledPane').classList.remove('hidden');
-  $('disabledMsg').textContent=(M1*M2<0?'El astigmatismo mixto combina un meridiano miópico y otro hipermetrópico.':'La hipermetropía requiere un perfil anular y transición periférica.')+' La fórmula miópica de Munnerlyn y la elección del máximo entre meridianos no permiten estimar aquí una profundidad máxima válida. No se muestran lecho residual ni PTA para evitar falsa precisión.';
-  $('ablBreakdown').textContent=`Meridianos: ${signed(M1)} / ${signed(M2)} D`;
+  $('experimentalTitle').textContent=mixed?'Astigmatismo mixto · perfil experimental':'Hipermetropía · perfil experimental';
+  $('disabledMsg').textContent='Solo zona óptica: NO equivale a la máxima profundidad real del EX500. Sin transición ni WFO.'+($('wfToggle').checked?' El WFO seleccionado NO se aplica.':'');
+  valWithUnit('ablVal',model.peak);
+  $('readAbl').classList.remove('status-unavailable');$('readAbl').classList.add('status-warn');
+  $('ablBreakdown').textContent=`Centro teórico ${nfmt(model.central)} µm · Máximo OZ a r≈${nfmt(model.radius,2)} mm · M1 ${signed(M1)} / M2 ${signed(M2)} D`;
+  $('bedTag').textContent='NO ESTIMADO';$('bedTag').className='status-tag neutral';
+  $('bedNote').textContent='Se requiere paquimetría local y perfil real del tratamiento.';
+  $('readPta').classList.add('inactive-pta');
+  $('ptaTag').textContent='NO APLICA';$('ptaTag').className='status-tag neutral';
+  $('ptaBreakdown').textContent='No es aplicable el PTA clásico ni su umbral del 40% a este perfil teórico.';
+  $('readTissue').classList.add('status-unavailable');
+  $('tissueBreakdown').textContent='No estimado para este perfil.';
+  $('geoSection').classList.remove('hidden');
+  $('geoCaption').textContent='Curvas meridionales ideales en el diámetro de zona óptica ('+nfmt(v.zone,1)+' mm). El punto más profundo del tratamiento real puede estar en la zona de transición. Gráfico conceptual sin validación frente al excimer.';
+  drawGeometricProfile(M1,M2,v.zone,model);
   $('expNote').classList.add('hidden');updateKSim(null);return;
  }
- $('disabledPane').classList.add('hidden');
+ $('disabledPane').classList.add('hidden');$('geoSection').classList.add('hidden');
  const d1=Math.max(0,-M1)*v.zone*v.zone/3,d2=Math.max(0,-M2)*v.zone*v.zone/3;
  const base=Math.max(d1,d2),experimental=$('wfToggle').checked,increment=experimental?v.wf*base/100:0,depth=base+increment;
  const layer=state.mode==='lasik'?v.flap:v.epi,rsb=v.paqui-layer-depth,amt=layer+depth;
@@ -910,11 +997,12 @@ $('modeToggle').addEventListener('click',e=>{
 });
 $('wfToggle').addEventListener('change',queueCalc);
 $('kSection').addEventListener('toggle',queueCalc);
+$('geoSection').addEventListener('toggle',queueCalc);
 $('resetButton').addEventListener('click',()=>{
  for(const [id,value] of Object.entries(defaults))cachedInputs[id].value=value;
  for(const id of inputIds)syncRangeToInput(id);
  $('wfToggle').checked=false;$('kSection').open=false;$('kCoefficientDetails').open=false;
- $('advancedPanel').open=false;setMode('lasik');queueCalc();
+ $('advancedPanel').open=false;$('geoSection').open=false;setMode('lasik');queueCalc();
 });
 calc();
 })();
