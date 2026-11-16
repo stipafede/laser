@@ -640,6 +640,7 @@ footer{margin-top:15px;padding-top:12px}
 .k-params .unit-field.k-stepper .unit-suffix{flex:0 0 auto;font-size:10px;white-space:nowrap}
 .app-utilities{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin:16px 0 0;padding:0 2px}
 .app-action{display:inline-flex;align-items:center;justify-content:center;gap:8px;text-align:center;text-decoration:none;background:var(--panel);border:1px solid var(--line-strong);border-radius:9px;min-height:42px;padding:9px 13px;color:var(--text);font:500 12px var(--sans);cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.app-action[hidden]{display:none!important}
 .app-action:hover,.app-action:focus-visible{border-color:var(--accent);color:var(--accent)}
 .app-action.primary{border-color:rgba(95,224,200,.38);background:var(--accent-dim);color:var(--accent)}
 .app-action svg{width:17px;height:17px;flex-shrink:0;stroke:currentColor;stroke-width:1.7;fill:none;stroke-linecap:round;stroke-linejoin:round}
@@ -650,6 +651,17 @@ footer{margin-top:15px;padding-top:12px}
 .install-dialog strong{color:var(--text)}
 .install-dialog ol{padding-left:21px;margin:9px 0 18px;color:var(--text-dim);font-size:13px;line-height:1.7}
 .install-dialog .app-action{width:100%;margin-top:10px}
+/* Beta 0.61 revisión: guía visual accesible de instalación */
+.install-dialog{max-height:calc(100dvh - 28px);overflow-y:auto;-webkit-overflow-scrolling:touch}
+.install-steps{counter-reset:installstep;list-style:none!important;padding:0!important;margin:14px 0!important;display:grid;gap:9px}
+.install-steps>li{display:grid;grid-template-columns:21px 42px minmax(0,1fr);gap:8px;align-items:center;padding:9px 8px;border:1px solid var(--line-strong);border-radius:9px;background:var(--panel-2);line-height:1.4!important;color:var(--text)!important}
+.install-steps>li::before{counter-increment:installstep;content:counter(installstep);font:600 12px var(--sans);text-align:center;color:var(--accent)}
+.install-step-icon{display:flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:10px;background:rgba(95,224,200,.10);color:var(--accent);border:1px solid rgba(95,224,200,.22)}
+.install-step-icon svg{display:block;width:25px;height:25px;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;fill:none}
+.install-step-text{font-size:13px;color:var(--text);line-height:1.42}
+.install-step-text small{display:block;margin-top:3px;font-size:11px;color:var(--text-dim);line-height:1.4}
+.install-tip{padding:10px 11px;border-left:3px solid var(--accent);background:var(--accent-dim);border-radius:6px;font-size:12px;color:var(--text-dim);line-height:1.5}
+@media(max-width:380px){.install-dialog{padding:17px}.install-steps>li{grid-template-columns:16px 37px minmax(0,1fr);gap:7px;padding:8px 6px}.install-step-icon{width:36px;height:36px}.install-step-text{font-size:12px}}
 @media(max-width:760px){.k-params{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.k-params .field:first-child{grid-column:1/-1}.k-params .field>label{height:auto;min-height:25px;align-items:end!important}.app-utilities{margin-top:13px}.app-action{flex:1 1 155px}}
 @media(max-width:360px){.k-params .unit-field.k-stepper .stepper-btn{flex-basis:25px;width:25px}.k-params{gap:6px}}
 </style></head><body>
@@ -1033,20 +1045,66 @@ for(const button of document.querySelectorAll('[data-adjust]'))button.addEventLi
  const delta=Number(button.dataset.delta);
  const decimals=specs[id][2];
  const factor=Math.pow(10,decimals);
- const v=Math.min(specs[id][1],Math.max(specs[id][0],Math.round((base+delta)*factor)/factor));
+ const next=Math.round((base+delta)*factor)/factor;
+ // Los ejes astigmáticos tienen periodicidad de 180°. Se conserva 180° como valor visible.
+ // Ejemplos: 180+5→5, 0-5→175, 175+5→180 y 5-5→0.
+ const v=id==='axis'
+  ? (next>180?next-180:next<0?next+180:next)
+  : Math.min(specs[id][1],Math.max(specs[id][0],next));
  cachedInputs[id].value=v.toFixed(decimals);syncRangeToInput(id);queueCalc();
 });
 
-// Progressive web installation: Android prompt where supported; Safari iOS uses Share menu.
+// Instalación PWA: experiencia adaptada al sistema operativo y navegador.
 let deferredInstallPrompt=null;
+const iconSVG={
+ // Ícono del menú de página en Safari iOS 27 (tres trazos horizontales).
+ safariMenu:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h12M4 18h8"/></svg>',
+ share:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V3m-4 4 4-4 4 4"/><path d="M5 11H4a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-1"/></svg>',
+ more:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 9 7 7 7-7"/></svg>',
+ add:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="M12 7v10M7 12h10"/></svg>',
+ androidMenu:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="1.5" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="12" cy="19" r="1.5" fill="currentColor" stroke="none"/></svg>',
+ install:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M4 17v3h16v-3"/></svg>'
+};
+function helpStep(icon,txt,detail=''){
+ return `<li><span class="install-step-icon">${iconSVG[icon]}</span><span class="install-step-text">${txt}${detail?`<small>${detail}</small>`:''}</span></li>`;
+}
+function installHelpIOS(){
+ const browser=navigator.userAgent;
+ const safariLikely=/Safari\//i.test(browser) && !/(CriOS|FxiOS|EdgiOS|OPiOS|DuckDuckGo)/i.test(browser);
+ const browserNote=safariLikely?'':'<p class="install-tip">Si estás dentro de otra app o navegador y no encontrás estas opciones, abrí la página en <strong>Safari</strong>.</p>';
+ return '<p>En <strong>Safari para iPhone</strong>, seguí estos pasos:</p>'+
+  '<ol class="install-steps">'+
+   helpStep('safariMenu','Tocá este ícono junto a la barra de navegación.','Las tres rayitas están a la izquierda de la dirección en Safari.')+
+   helpStep('share','Seleccioná <strong>Compartir</strong>.','Buscá el ícono del cuadrado con una flecha hacia arriba.')+
+   helpStep('more','Si no ves «Agregar a Inicio», tocá <strong>Ver más</strong>.','Este paso se omite si ya aparece esa opción.')+
+   helpStep('add','Elegí <strong>Agregar a Inicio</strong> y confirmá con «Agregar».')+
+  '</ol><p class="install-tip">En versiones de Safari que muestran directamente el ícono Compartir, podés ir al paso 2.</p>'+browserNote;
+}
+function installHelpAndroid(){
+ return '<p>En <strong>Chrome para Android</strong>, tocá los controles indicados:</p>'+
+  '<ol class="install-steps">'+
+   helpStep('androidMenu','Abrí el menú de Chrome <strong>⋮</strong>.')+
+   helpStep('install','Elegí <strong>Instalar aplicación</strong> o <strong>Agregar a pantalla principal</strong>.','El nombre varía según el navegador.')+
+   helpStep('add','Confirmá la instalación.')+
+  '</ol><p class="install-tip">Cuando Android permita la instalación directa, aparecerá automáticamente su ventana de confirmación.</p>';
+}
+function alreadyInstalled(){
+ return window.matchMedia('(display-mode: standalone)').matches || navigator.standalone===true;
+}
+function updateInstallVisibility(){
+ // Solo podemos saber con certeza si esta pestaña se ejecuta en modo instalado.
+ $('installAppButton').hidden=alreadyInstalled();
+}
 window.addEventListener('beforeinstallprompt',event=>{
  event.preventDefault();
  deferredInstallPrompt=event;
 });
-window.addEventListener('appinstalled',()=>{deferredInstallPrompt=null;});
-function alreadyInstalled(){
- return window.matchMedia('(display-mode: standalone)').matches || navigator.standalone===true;
-}
+window.addEventListener('appinstalled',()=>{
+ deferredInstallPrompt=null;
+ updateInstallVisibility();
+});
+window.matchMedia('(display-mode: standalone)').addEventListener?.('change',updateInstallVisibility);
+updateInstallVisibility();
 function showInstallHelp(message){
  $('installInstructions').innerHTML=message;
  const dialog=$('installDialog');
@@ -1060,26 +1118,24 @@ $('closeInstallDialog').addEventListener('click',()=>{
 });
 $('installAppButton').addEventListener('click',async()=>{
  if(alreadyInstalled()){
-  showInstallHelp('<p><strong>La calculadora ya está abierta como aplicación.</strong> Podés acceder desde el ícono de tu pantalla de inicio.</p>');
+  updateInstallVisibility();
   return;
  }
+ // Instalación nativa, disponible en Chrome/Android cuando el navegador lo permite.
  if(deferredInstallPrompt){
   const installEvent=deferredInstallPrompt;
   deferredInstallPrompt=null;
-  try{await installEvent.prompt();await installEvent.userChoice;}catch(_e){
-   showInstallHelp('<p>Desde el menú del navegador, elegí <strong>Instalar aplicación</strong> o <strong>Agregar a pantalla principal</strong>.</p>');
-  }
+  try{
+   await installEvent.prompt();
+   await installEvent.userChoice;
+  }catch(_e){showInstallHelp(installHelpAndroid());}
   return;
  }
  const isIOS=/iPhone|iPad|iPod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
  const isAndroid=/Android/i.test(navigator.userAgent);
- if(isIOS){
-  showInstallHelp('<p>En iPhone o iPad, abrí la calculadora en <strong>Safari</strong> y seguí estos pasos:</p><ol><li>Tocá <strong>Compartir</strong> (cuadrado con flecha hacia arriba).</li><li>Elegí <strong>Agregar a pantalla de inicio</strong> (puede estar en «Más»).</li><li>Confirmá con <strong>Agregar</strong>.</li></ol><p>Desde otros navegadores de iPhone, primero abrila en Safari si no aparece esa opción.</p>');
- }else if(isAndroid){
-  showInstallHelp('<p>En Chrome para Android:</p><ol><li>Abrí el menú <strong>⋮</strong>.</li><li>Elegí <strong>Instalar aplicación</strong> o <strong>Agregar a pantalla principal</strong>.</li><li>Confirmá la instalación.</li></ol><p>En navegadores compatibles, también puede aparecer un aviso de instalación.</p>');
- }else{
-  showInstallHelp('<p>En el menú de Chrome o Edge, buscá <strong>Instalar aplicación</strong> o <strong>Crear acceso directo</strong>.</p><p>Para instalarla en el celular, abrí esta misma dirección desde Safari o Chrome.</p>');
- }
+ if(isIOS)showInstallHelp(installHelpIOS());
+ else if(isAndroid)showInstallHelp(installHelpAndroid());
+ else showInstallHelp('<p>En Chrome o Edge buscá <strong>Instalar aplicación</strong> o <strong>Crear acceso directo</strong> en el menú del navegador.</p><p>Para instalarla en un teléfono, abrí la página desde Safari o Chrome.</p>');
 });
 if('serviceWorker' in navigator && (location.protocol==='https:'||location.hostname==='localhost')){
  window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
